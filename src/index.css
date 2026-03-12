@@ -1,13 +1,393 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ─── CSS Variables – Wimbledon Palette ─────────────────── */
+:root {
+  --green-deep:    #0a3d1f;
+  --green-mid:     #145a32;
+  --green-court:   #1e7a40;
+  --green-light:   #2ecc71;
+  --gold:          #c8a84b;
+  --gold-light:    #e2c76b;
+  --gold-pale:     #f5e9c0;
+  --white:         #f9f7f2;
+  --off-white:     #ede9e0;
+  --text-primary:  #f9f7f2;
+  --text-muted:    rgba(249,247,242,0.55);
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  --card-radius: 14px;
+  --transition:  0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* ─── Reset ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  cursor: none; /* custom tennis-ball cursor via JS */
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--green-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Custom cursor ──────────────────────────────────────── */
+.cursor {
+  position: fixed;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--gold);
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s ease, opacity 0.2s ease;
+  mix-blend-mode: exclusion;
+}
+.cursor::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.5);
+  /* tennis ball seam arc */
+  clip-path: path('M 2 9 Q 9 2 16 9');
+}
+.cursor--clicking { transform: translate(-50%, -50%) scale(0.75); }
+
+
+/* ─── Court line background ──────────────────────────────── */
+.court-lines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  opacity: 0.07;
+}
+.court-lines svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ─── Floating tennis balls ──────────────────────────────── */
+.balls-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Page layout ────────────────────────────────────────── */
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px 80px;
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.avatar-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+.avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--gold);
+  display: block;
+}
+.avatar-placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--green-mid);
+  border: 3px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  user-select: none;
+}
+.avatar-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold-light);
+  opacity: 0.4;
+  animation: spin 12s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.site-name {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--white);
+}
+.site-handle {
+  font-size: 0.9rem;
+  color: var(--gold-light);
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+  font-weight: 500;
+}
+.site-tagline {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+  font-weight: 300;
+}
+
+/* ─── Divider ─────────────────────────────────────────────── */
+.divider {
+  width: 120px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 20px auto;
+}
+
+/* ─── Link cards container ───────────────────────────────── */
+.links-container {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ─── Individual link card ───────────────────────────────── */
+.link-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: var(--card-radius);
+  background: rgba(5, 30, 15, 0.72);
+  border: 1px solid rgba(200, 168, 75, 0.28);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  text-decoration: none;
+  color: var(--text-primary);
+  cursor: none;
+  overflow: hidden;
+  transition: transform var(--transition),
+              border-color 0.2s ease,
+              background 0.2s ease,
+              box-shadow 0.2s ease;
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.link-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--card-radius);
+  background: linear-gradient(135deg, rgba(200,168,75,0.1) 0%, transparent 55%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.link-card:hover {
+  transform: translateY(-3px) scale(1.012);
+  border-color: rgba(200, 168, 75, 0.6);
+  background: rgba(5, 38, 18, 0.88);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(200,168,75,0.25), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+.link-card:hover::before { opacity: 1; }
+.link-card:active { transform: translateY(0) scale(0.99); }
+
+/* ─── Coming soon card state ─────────────────────────────── */
+.link-card--coming-soon {
+  pointer-events: none;
+  opacity: 0.55;
+  filter: saturate(0.35);
+}
+
+/* Coming soon badge */
+.card-badge--coming-soon {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255,255,255,0.18);
+  padding: 4px 9px;
+  border-radius: 20px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.card-badge--coming-soon::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  display: inline-block;
+  animation: dimPulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes dimPulse {
+  0%, 100% { opacity: 0.25; }
+  50%       { opacity: 1; }
+}
+
+/* shimmer on hover */
+.link-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+  transition: left 0.45s ease;
+  pointer-events: none;
+}
+.link-card:hover::after { left: 160%; }
+
+/* stagger animation delays */
+.link-card:nth-child(1) { animation-delay: 0.1s; }
+.link-card:nth-child(2) { animation-delay: 0.18s; }
+.link-card:nth-child(3) { animation-delay: 0.26s; }
+.link-card:nth-child(4) { animation-delay: 0.34s; }
+.link-card:nth-child(5) { animation-delay: 0.42s; }
+.link-card:nth-child(6) { animation-delay: 0.50s; }
+
+/* ─── Card icon ──────────────────────────────────────────── */
+.card-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Platform-specific icon backgrounds */
+.icon-youtube   { background: rgba(255, 0, 0, 0.18);   border: 1px solid rgba(255,0,0,0.25); }
+.icon-tiktok    { background: rgba(0, 0, 0, 0.35);     border: 1px solid rgba(255,255,255,0.12); }
+.icon-instagram { background: rgba(193,53,132,0.18);   border: 1px solid rgba(193,53,132,0.3); }
+.icon-patreon   { background: rgba(255,102,0,0.18);    border: 1px solid rgba(255,102,0,0.3); }
+.icon-merch     { background: rgba(200,168,75,0.18);   border: 1px solid rgba(200,168,75,0.3); }
+.icon-twitter   { background: rgba(29,161,242,0.18);   border: 1px solid rgba(29,161,242,0.3); }
+.icon-custom    { background: rgba(255,255,255,0.08);  border: 1px solid rgba(255,255,255,0.15); }
+
+/* ─── Card text ──────────────────────────────────────────── */
+.card-text {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.card-label {
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+  display: block;
+}
+.card-description {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 300;
+  display: block;
+}
+
+/* ─── Badge ──────────────────────────────────────────────── */
+.card-badge {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--green-deep);
+  background: var(--gold);
+  padding: 3px 8px;
+  border-radius: 20px;
+  position: relative;
+  z-index: 1;
+  animation: badgePulse 2.5s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200,168,75,0.5); }
+  50%       { box-shadow: 0 0 0 6px rgba(200,168,75,0); }
+}
+
+/* ─── Arrow ──────────────────────────────────────────────── */
+.card-arrow {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  opacity: 0.4;
+  transition: opacity 0.2s, transform 0.2s;
+  position: relative;
+  z-index: 1;
+}
+.link-card:hover .card-arrow {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+/* ─── Footer ─────────────────────────────────────────────── */
+.footer {
+  margin-top: 52px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
+}
+.footer a {
+  color: var(--gold);
+  text-decoration: none;
+}
+.footer a:hover { text-decoration: underline; }
+
+/* ─── Keyframes ──────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .page { padding: 44px 16px 60px; }
+  .link-card { padding: 14px 16px; }
+  .card-icon { width: 38px; height: 38px; font-size: 18px; }
 }
