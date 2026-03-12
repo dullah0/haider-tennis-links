@@ -10,10 +10,56 @@ interface Ball {
   hitScale: number;
   hitDecay: number;
   trail: { x: number; y: number }[];
-  // idle drift: a slow wandering target applied only when nearly still
   driftVX: number;
   driftVY: number;
-  driftTimer: number; // frames until next drift direction pick
+  driftTimer: number;
+}
+
+// ── Tennis ball image ─────────────────────────────────────────
+// To use your own SVG: drop your file into public/tennis-ball.svg
+// It is pre-loaded once and drawn via drawImage() — identical on
+// every OS/browser, no emoji font involved.
+const BALL_IMAGE_URL = '/tennis-ball.svg'; // ← swap path if needed
+
+const ballImg = new Image();
+ballImg.src = BALL_IMAGE_URL;
+
+function drawTennisBall(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+  opacity: number,
+  scaleX = 1,
+  scaleY = 1,
+  angle = 0
+) {
+  const size = radius * 2;
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.scale(scaleX, scaleY);
+
+  if (ballImg.complete && ballImg.naturalWidth > 0) {
+    ctx.drawImage(ballImg, -radius, -radius, size, size);
+  } else {
+    // Fallback circle until SVG loads
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#c8d630';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth = radius * 0.12;
+    ctx.beginPath();
+    ctx.arc(-radius * 0.18, 0, radius * 0.72, -Math.PI * 0.52, Math.PI * 0.52);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(radius * 0.18, 0, radius * 0.72, Math.PI * 0.48, Math.PI * 1.52);
+    ctx.stroke();
+  }
+
+  ctx.restore();
 }
 
 export default function TennisBalls() {
@@ -98,16 +144,13 @@ export default function TennisBalls() {
     };
 
     // ── Constants ────────────────────────────────────────────
-    const FRICTION      = 0.991;
-    const BOUNCE_DAMP   = 0.72;
-    const MAX_SPEED     = 28;
-    const HIT_RADIUS    = 1.6;
-    const MIN_HIT_SPEED = 4;
-    // Ball is "idle" below this speed — drift kicks in instead of random noise
+    const FRICTION       = 0.991;
+    const BOUNCE_DAMP    = 0.72;
+    const MAX_SPEED      = 28;
+    const HIT_RADIUS     = 1.6;
+    const MIN_HIT_SPEED  = 4;
     const IDLE_THRESHOLD = 0.25;
-    // How strongly drift nudges an idle ball (very gentle)
     const DRIFT_STRENGTH = 0.008;
-    const EMOJI = '🎾';
 
     // ── Main loop ────────────────────────────────────────────
     const tick = () => {
@@ -122,23 +165,17 @@ export default function TennisBalls() {
           const dx = b.x - mouseX;
           const dy = b.y - mouseY;
           const dist = Math.sqrt(dx * dx + dy * dy);
-
           if (dist < b.size * HIT_RADIUS) {
             const nx = dist > 0 ? dx / dist : 0;
             const ny = dist > 0 ? dy / dist : -1;
             const impulse = cursorSpeed * 0.85;
-
             b.vx = cursorVX * 0.75 + nx * impulse * 0.5;
             b.vy = cursorVY * 0.75 + ny * impulse * 0.5;
             b.vx = clampSpeed(b.vx, MAX_SPEED);
             b.vy = clampSpeed(b.vy, MAX_SPEED);
-
             b.hitScale = 1.45;
             b.hitDecay = 0.88;
-
-            // FIX 1: clear trail immediately on hit — no ghost left behind
             b.trail = [];
-
             playHit(cursorSpeed);
           }
         }
@@ -150,7 +187,6 @@ export default function TennisBalls() {
           const dy   = b.y - other.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           const minD = (b.size + other.size) * 0.55;
-
           if (dist < minD && dist > 0) {
             const nx  = dx / dist;
             const ny  = dy / dist;
@@ -159,7 +195,7 @@ export default function TennisBalls() {
             const dot = dvx * nx + dvy * ny;
             if (dot < 0) {
               const imp = dot * 0.55;
-              b.vx     -= imp * nx; b.vy     -= imp * ny;
+              b.vx -= imp * nx; b.vy -= imp * ny;
               other.vx += imp * nx; other.vy += imp * ny;
               const overlap = (minD - dist) / 2;
               b.x += nx * overlap; b.y += ny * overlap;
@@ -174,18 +210,13 @@ export default function TennisBalls() {
 
         const speed = Math.sqrt(b.vx ** 2 + b.vy ** 2);
 
-        // FIX 2: idle drift — only applied when ball is nearly still.
-        // Uses a smooth slowly-changing direction rather than per-frame random,
-        // eliminating high-frequency oscillation entirely.
         if (speed < IDLE_THRESHOLD) {
           b.driftTimer--;
           if (b.driftTimer <= 0) {
-            // Pick a new gentle drift direction, smoothly
             b.driftVX    = randDrift();
             b.driftVY    = randDrift();
-            b.driftTimer = 180 + Math.floor(Math.random() * 240); // 3–7 s @ 60fps
+            b.driftTimer = 180 + Math.floor(Math.random() * 240);
           }
-          // Nudge toward drift target — friction will govern actual speed
           b.vx += b.driftVX * DRIFT_STRENGTH;
           b.vy += b.driftVY * DRIFT_STRENGTH;
         }
@@ -196,28 +227,20 @@ export default function TennisBalls() {
         // ── Wall bounce ──────────────────────────────────────
         const r = b.size * 0.5;
         if (b.x - r < 0) {
-          b.x  = r;
-          b.vx = Math.abs(b.vx) * BOUNCE_DAMP;
-          b.hitScale = 1.2; b.hitDecay = 0.82;
-          b.trail = [];
+          b.x = r; b.vx = Math.abs(b.vx) * BOUNCE_DAMP;
+          b.hitScale = 1.2; b.hitDecay = 0.82; b.trail = [];
         }
         if (b.x + r > canvas.width) {
-          b.x  = canvas.width - r;
-          b.vx = -Math.abs(b.vx) * BOUNCE_DAMP;
-          b.hitScale = 1.2; b.hitDecay = 0.82;
-          b.trail = [];
+          b.x = canvas.width - r; b.vx = -Math.abs(b.vx) * BOUNCE_DAMP;
+          b.hitScale = 1.2; b.hitDecay = 0.82; b.trail = [];
         }
         if (b.y - r < 0) {
-          b.y  = r;
-          b.vy = Math.abs(b.vy) * BOUNCE_DAMP;
-          b.hitScale = 1.2; b.hitDecay = 0.82;
-          b.trail = [];
+          b.y = r; b.vy = Math.abs(b.vy) * BOUNCE_DAMP;
+          b.hitScale = 1.2; b.hitDecay = 0.82; b.trail = [];
         }
         if (b.y + r > canvas.height) {
-          b.y  = canvas.height - r;
-          b.vy = -Math.abs(b.vy) * BOUNCE_DAMP;
-          b.hitScale = 1.2; b.hitDecay = 0.82;
-          b.trail = [];
+          b.y = canvas.height - r; b.vy = -Math.abs(b.vy) * BOUNCE_DAMP;
+          b.hitScale = 1.2; b.hitDecay = 0.82; b.trail = [];
         }
 
         // ── Hit scale spring ─────────────────────────────────
@@ -226,48 +249,31 @@ export default function TennisBalls() {
           if (b.hitScale < 1.01) b.hitScale = 1;
         }
 
-        // ── Trail — only push when moving, drain when slow ───
+        // ── Trail ────────────────────────────────────────────
         const currentSpeed = Math.sqrt(b.vx ** 2 + b.vy ** 2);
         if (currentSpeed > 3) {
           b.trail.push({ x: b.x, y: b.y });
           if (b.trail.length > 8) b.trail.shift();
         } else {
-          // Drain one entry per frame so trail fades out smoothly
           if (b.trail.length > 0) b.trail.shift();
         }
 
         // ── Draw trail ───────────────────────────────────────
+        const radius = b.size * 0.5;
         b.trail.forEach((pt, i) => {
-          const frac        = i / b.trail.length;
-          const trailAlpha  = frac * b.opacity * 0.3;
-          const trailSize   = b.size * frac * 0.6;
-          if (trailSize < 4) return;
-          ctx.save();
-          ctx.globalAlpha  = trailAlpha;
-          ctx.font         = `${trailSize}px serif`;
-          ctx.textAlign    = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(EMOJI, pt.x, pt.y);
-          ctx.restore();
+          const frac = (i + 1) / b.trail.length;
+          drawTennisBall(ctx, pt.x, pt.y, radius * frac * 0.65, b.opacity * frac * 0.28);
         });
 
         // ── Draw ball ────────────────────────────────────────
         const angle  = Math.atan2(b.vy, b.vx);
         const squash = Math.min(currentSpeed / 18, 0.28);
+        const sX     = 1 + squash * 0.5;
+        const sY     = 1 - squash * 0.35;
 
-        ctx.save();
-        ctx.globalAlpha  = b.opacity;
-        ctx.translate(b.x, b.y);
-        ctx.rotate(angle);
-        ctx.scale(1 + squash * 0.5, 1 - squash * 0.35);
-        ctx.font         = `${b.size * b.hitScale}px serif`;
-        ctx.textAlign    = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(EMOJI, 0, 0);
-        ctx.restore();
+        drawTennisBall(ctx, b.x, b.y, radius * b.hitScale, b.opacity, sX, sY, angle);
       }
 
-      // Decay cursor velocity so a single fast frame doesn't persist
       cursorVX *= 0.6;
       cursorVY *= 0.6;
 

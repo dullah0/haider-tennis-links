@@ -105,14 +105,18 @@ body {
   position: relative;
   display: inline-block;
   margin-bottom: 20px;
+  overflow: hidden;        /* ← add this */
+  border-radius: 50%;      /* ← add this so clip stays circular */
+  border: 3px solid var(--gold);
 }
 .avatar {
   width: 96px;
   height: 96px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--gold);
+  object-position: center 60%;  /* ← adjust this to pan the crop */
   display: block;
+  transform: scale(2.4);
 }
 .avatar-placeholder {
   width: 96px;
@@ -299,6 +303,7 @@ body {
 .icon-patreon   { background: rgba(255,102,0,0.18);    border: 1px solid rgba(255,102,0,0.3); }
 .icon-merch     { background: rgba(200,168,75,0.18);   border: 1px solid rgba(200,168,75,0.3); }
 .icon-twitter   { background: rgba(29,161,242,0.18);   border: 1px solid rgba(29,161,242,0.3); }
+.icon-email     { background: rgba(200,168,75,0.15);   border: 1px solid rgba(200,168,75,0.28); }
 .icon-custom    { background: rgba(255,255,255,0.08);  border: 1px solid rgba(255,255,255,0.15); }
 
 /* ─── Card text ──────────────────────────────────────────── */

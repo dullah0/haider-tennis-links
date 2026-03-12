@@ -1,8 +1,4 @@
-// ============================================================
-//  HAIDER TENNIS CLUB – LINKS CONFIG
-//  Edit this file to update your links page.
-//  No other files need to be changed.
-// ============================================================
+import avatar from '../assets/final.png'
 
 export interface LinkCard {
   id: string;
@@ -23,6 +19,7 @@ export type Platform =
   | 'merch'
   | 'twitter'
   | 'website'
+  | 'email'
   | 'custom';
 
 export interface SiteConfig {
@@ -40,8 +37,8 @@ export interface SiteConfig {
 const config: SiteConfig = {
   name: 'Haider Tennis Club',
   handle: '@HaiderTennisClub',
-  tagline: 'Tennis content, tips & community 🎾',
-  // avatarUrl: 'https://your-image-url.com/avatar.jpg',
+  tagline: 'Welcome to the club! 🎾',
+  avatarUrl: avatar,
 
   links: [
     {
@@ -49,7 +46,7 @@ const config: SiteConfig = {
       label: 'Watch on YouTube',
       url: 'https://youtube.com/@HaiderTennisClub',
       platform: 'youtube',
-      description: 'Tutorials, match analysis & vlogs',
+      description: 'Long form videos coming soon!',
       badge: 'NEW VIDEO',
       enabled: true,
     },
@@ -58,7 +55,7 @@ const config: SiteConfig = {
       label: 'Follow on TikTok',
       url: 'https://tiktok.com/@HaiderTennisClub',
       platform: 'tiktok',
-      description: 'Short tips & match highlights',
+      description: 'Just random stuff',
       enabled: true,
     },
     {
@@ -66,16 +63,7 @@ const config: SiteConfig = {
       label: 'Instagram',
       url: 'https://instagram.com/HaiderTennisClub',
       platform: 'instagram',
-      description: 'Behind the scenes & reels',
-      enabled: true,
-    },
-    {
-      id: 'patreon',
-      label: 'Join the Club on Patreon',
-      url: 'https://patreon.com/HaiderTennisClub',
-      platform: 'patreon',
-      description: 'Exclusive drills, live Q&As & more',
-      badge: 'MEMBERS',
+      description: 'Hardcore reels',
       enabled: true,
     },
     {
@@ -83,9 +71,17 @@ const config: SiteConfig = {
       label: 'Shop Merch',
       url: 'https://merch.haidertennis.com',
       platform: 'merch',
-      description: 'Rackets, tees & club gear',
+      description: 'The internets best tennis clothing',
       enabled: true,
       comingSoon: true,
+    },
+    {
+      id: 'contact',
+      label: 'Contact',
+      url: 'mailto:haidertennisclub@gmail.com',
+      platform: 'email',
+      description: 'For collaborations and partnerships',
+      enabled: true,
     },
     // ── Add more cards below ──────────────────
     // {
