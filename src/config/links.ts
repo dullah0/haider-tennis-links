@@ -37,7 +37,7 @@ export interface SiteConfig {
 const config: SiteConfig = {
   name: 'Haider Tennis Club',
   handle: '@HaiderTennisClub',
-  tagline: 'Welcome to the club! 🎾',
+  tagline: 'Welcome to the club! The less serious side of tennis 🎾',
   avatarUrl: avatar,
 
   links: [
@@ -47,7 +47,6 @@ const config: SiteConfig = {
       url: 'https://youtube.com/@HaiderTennisClub',
       platform: 'youtube',
       description: 'Long form videos coming soon!',
-      badge: 'NEW VIDEO',
       enabled: true,
     },
     {
@@ -68,12 +67,12 @@ const config: SiteConfig = {
     },
     {
       id: 'merch',
-      label: 'Shop Merch',
-      url: 'https://merch.haidertennis.com',
+      label: 'Shop deucy',
+      url: 'https://deucyclothing.com',
       platform: 'merch',
-      description: 'The internets best tennis clothing',
+      description: 'The less serious side of tennis clothing',
       enabled: true,
-      comingSoon: true,
+      badge: "New drop!",
     },
     {
       id: 'contact',
