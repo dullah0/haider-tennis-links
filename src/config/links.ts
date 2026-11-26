@@ -1,4 +1,5 @@
 import avatar from '../assets/final.png'
+import acemateLogo from '../assets/acemate.png' // ← drop the official Acemate logo here
 
 export interface LinkCard {
   id: string;
@@ -7,6 +8,7 @@ export interface LinkCard {
   platform: Platform;      // Used for icon + colour accent
   description?: string;    // Optional short subtitle line
   badge?: string;          // Optional badge e.g. "NEW" | "LIVE"
+  logoUrl?: string;        // Optional – custom logo image, overrides the platform icon
   comingSoon?: boolean;    // Renders card as disabled with a "Coming Soon" badge
   enabled: boolean;        // Set false to hide without deleting
 }
@@ -37,7 +39,7 @@ export interface SiteConfig {
 const config: SiteConfig = {
   name: 'Haider Tennis Club',
   handle: '@HaiderTennisClub',
-  tagline: 'Welcome to the club! 🎾',
+  tagline: 'Welcome to the club! The less serious side of tennis 🎾',
   avatarUrl: avatar,
 
   links: [
@@ -47,7 +49,6 @@ const config: SiteConfig = {
       url: 'https://youtube.com/@HaiderTennisClub',
       platform: 'youtube',
       description: 'Long form videos coming soon!',
-      badge: 'NEW VIDEO',
       enabled: true,
     },
     {
@@ -68,12 +69,21 @@ const config: SiteConfig = {
     },
     {
       id: 'merch',
-      label: 'Shop Merch',
-      url: 'https://merch.haidertennis.com',
+      label: 'Shop deucy',
+      url: 'https://deucyclothing.com',
       platform: 'merch',
-      description: 'The internets best tennis clothing',
+      description: 'The less serious side of tennis clothing',
       enabled: true,
-      comingSoon: true,
+      badge: "New drop!",
+    },
+    {
+      id: 'acemate',
+      label: 'Acemate Tennis Robot',
+      url: 'https://www.acematetennis.com?sca_ref=12604850.sr2EqNCVJ5c&utm_source=uppromote&utm_medium=referral&utm_campaign=standard-affiliate-commission&utm_content=affiliate-Asadullah-Haider',
+      platform: 'custom',
+      description: 'The AI ball machine that rallies back',
+      badge: 'Affiliate',
+      enabled: true,
     },
     {
       id: 'contact',
