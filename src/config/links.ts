@@ -75,6 +75,15 @@ const config: SiteConfig = {
       badge: "New drop!",
     },
     {
+      id: 'acemate',
+      label: 'Acemate Tennis Robot',
+      url: 'https://www.acematetennis.com?sca_ref=12604850.sr2EqNCVJ5c&utm_source=uppromote&utm_medium=referral&utm_campaign=standard-affiliate-commission&utm_content=affiliate-Asadullah-Haider',
+      platform: 'custom',
+      description: 'The AI ball machine that rallies back',
+      badge: 'Affiliate',
+      enabled: true,
+    },
+    {
       id: 'contact',
       label: 'Contact',
       url: 'mailto:haidertennisclub@gmail.com',
