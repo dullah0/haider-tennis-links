@@ -1,5 +1,4 @@
 import avatar from '../assets/final.png'
-import acemateLogo from '../assets/acemate.png' // ← drop the official Acemate logo here
 
 export interface LinkCard {
   id: string;
@@ -8,7 +7,6 @@ export interface LinkCard {
   platform: Platform;      // Used for icon + colour accent
   description?: string;    // Optional short subtitle line
   badge?: string;          // Optional badge e.g. "NEW" | "LIVE"
-  logoUrl?: string;        // Optional – custom logo image, overrides the platform icon
   comingSoon?: boolean;    // Renders card as disabled with a "Coming Soon" badge
   enabled: boolean;        // Set false to hide without deleting
 }
